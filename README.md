@@ -9,12 +9,12 @@ RASL-seq is a powerful and inexpensive method to assess gene expression without 
 <BR>
 <BR>
 <h4>Usage</h4>
-python /path/to/RASLseqAnalysis.py [required args -f -p -w -d -b -o] [optional args -P]
+python /path/to/RASLseqAnalysis.py [required args -f -s -p -w -d -b -o] [optional args -P]
 
 <BLOCKQUOTE>
 
   -f : absolute path to fastq file (accepts gzip files) <BR>
-
+  
   -p : absolute path to probes file <BR>
 
   -w : absolute path to annotations file <BR>
@@ -24,8 +24,13 @@ python /path/to/RASLseqAnalysis.py [required args -f -p -w -d -b -o] [optional a
   -b : absolute path to blast bin directory <BR>
 
   -o : absolute path of output file <BR>
+  
+  -s : specifies sequencer id in fastq index line, e.g. @HISEQ <BR>
 
+  <BR>
+  
   -P : verbose printing <BR>
+
 
   <BR>
 
