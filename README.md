@@ -34,6 +34,10 @@ python /path/to/RASLseqAnalysis.py [required args -f -p -w -d -b -o] [optional a
 
 </BLOCKQUOTE>
 
+<h6>NOTE:RASLseqAnalysis_NAR.py is provided for transparency and requires manual parameter settings to run</h6>
+
+
+
 <BR>
 <BR>
 <h4>Input File Formats</h4>
@@ -80,6 +84,7 @@ NumPy
 
 
 
+
 <BR>
 <BR>
 <h4>References</h4>
@@ -88,4 +93,6 @@ NumPy
 Curr. Protocol. Mol. Biol., 98 (2012), pp. 4.13.1–4.13.9
 
 2. Larman HB, Scott ER, Wogan M, Oliveira G, Torkamani A, Schultz PG,  Sensitive, multiplex and direct quantification of RNA sequences using a modified RASL assay, Nucleic Acids Res. 2014;42(14):9146-57
+
+
 
