@@ -57,7 +57,7 @@ X.probes: tab-separated file describing the RASLseq Probes with the following co
   DonorAdaptorSequence <BR>
   ProbeName <BR>
   <BR>
-  Please see example file in ex/ directory <BR>
+  Please see example file in data/ directory <BR>
 </BLOCKQUOTE>
 <BR>
 X.bc: tab-separated file describing each well in the experiment with the following columns and column headers<BR>
@@ -67,7 +67,7 @@ X.bc: tab-separated file describing each well in the experiment with the followi
   well_bc <BR>
   OPTIONAL: additional columns with well metadata, column headers are user defined, e.g. drug_concentration
   <BR>
-  Please see example file in ex/ directory <BR>
+  Please see example file in data/ directory <BR>
 </BLOCKQUOTE>
 
 <BR>
