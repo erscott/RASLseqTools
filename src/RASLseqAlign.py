@@ -31,14 +31,14 @@ def rasl_probe_blast(read_file_path, blastn_path, db_path, print_on=False):
     write_path = read_file_path.rstrip(".txt") + "_blast_output.txt"
     
     
-    db = " -db " + db_path #/gpfs/home/erscott/Datasets_raw/UCSC_tables/commonSnp135_masked_hg19/commonSnp135_masked_hg19_transcript_coding_seq" # -db /gpfs/home/erscott/Datasets_raw/UCSC_tables/masked_hg19_snp135/masked_hg19_transcript_coding_seq"
+    db = " -db " + db_path 
     
     
     #SETTING BLAST WORD SIZE
     wordsize = "-word_size 8 "
     
     
-    #blast_run = subprocess.Popen("/gpfs/home/erscott/Tools/blast/ncbi-blast-2.2.26+/bin/blastn -task megablast -query "+ read_file_path +" -evalue 20 "+ wordsize + db +" > new_seq_blast_results.txt",shell=True,stdout=subprocess.PIPE).stdout
+    
     blast_run = os.system(blastn_path+"/blastn" + " -task blastn-short -query " \
                           + read_file_path +" -evalue 1e-6 "+ wordsize + db +" -max_target_seqs 1" +" -strand 'plus' -xdrop_gap 7 -num_threads 12" \
                           + " -outfmt '6 -outfmt qseqid -outfmt mismatch -outfmt evalue -outfmt sseqid -outfmt qlen -outfmt length -outfmt qseq -outfmt qstart -outfmt sseq -outfmt sstart -outfmt send' >"+ write_path)
