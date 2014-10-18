@@ -194,7 +194,7 @@ class RASLseqAnalysis_obj_heur(object):
         self.RASLseqAnalysis_df = self._merge_plate_well_annot(self.read_df_counts, self.RASLseqBCannot_obj.well_annot_df)     
         
         
-        self.RASLseqAnalysis_df.to_csv(self.write_path, sep="\t", index=False)
+        self.RASLseqAnalysis_df.to_csv(self.write_path, sep="\t")
         self.read_df_counts.to_csv(self.write_path+'.read_df_counts', sep="\t")
         self.read_df.to_csv(self.write_path+'.read_df', sep="\t")
         
