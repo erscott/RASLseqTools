@@ -1,4 +1,4 @@
-RASLseqAligner
+RASLseqTools
 ==============
 
 RASLseq FASTQ reads to RASLprobe counts.
