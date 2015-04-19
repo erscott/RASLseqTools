@@ -53,9 +53,7 @@ def rasl_probe_blast(read_file_path, blastn_path, db_path):
     wordsize = "-word_size 8 "
     
     #PRINTING BLAST COMMAND
-    print blastn_path + " -task blastn-short -query " \
-                          + read_file_path +" -evalue 1e-6 "+ wordsize + db +" -max_target_seqs 1" +" -strand 'plus' -xdrop_gap 7" \
-                          + " -outfmt '6 -outfmt qseqid -outfmt mismatch -outfmt evalue -outfmt sseqid -outfmt qlen -outfmt length -outfmt qseq -outfmt qstart -outfmt sseq -outfmt sstart -outfmt send' >"+ write_path
+    print "/gpfs/home/erscott/Tools/blast/ncbi-blast-2.2.26+/bin/blastn -task blastn-short -query "+ read_file_path +" -evalue 20 "+ wordsize + db +" -outfmt 5"
 
     #blast_run = subprocess.Popen("/gpfs/home/erscott/Tools/blast/ncbi-blast-2.2.26+/bin/blastn -task megablast -query "+ read_file_path +" -evalue 20 "+ wordsize + db +" > new_seq_blast_results.txt",shell=True,stdout=subprocess.PIPE).stdout
     blast_run = os.system(blastn_path + " -task blastn-short -query " \
@@ -348,6 +346,38 @@ def get_blast_alignments(collapsed_read_df, blastn_path, db_path, blast_write_pa
     return bl_results
 
 
+# <codecell>
+
+#TESTING
+# a = get_collapsed_read_df('/gpfs/home/erscott/Datasets_raw/RASLseq/Bcell_exp_2013_10/fastq/P1_CGGTTCT_L001_R1_001_100k.fastq.gz',print_on=True)     
+# b = find_get_rasl_probe_and_wellbc_exact(a,print_on=True)
+
+# bl_write_path = "/gpfs/home/erscott/Datasets_raw/RASLseq/Bcell_exp_2013_10/blastdb/"
+# blastn_path1 = '/gpfs/home/erscott/Tools/blast/ncbi-blast-2.2.26+/bin/blastn'
+# db_path = "/gpfs/home/erscott/Datasets_raw/RASLseq/Bcell_exp_2013_10/blastdb/on_off_targetseq"
+# bl_results = get_blast_alignments(b, blastn_path1, db_path, bl_write_path)
+
+
+# b.set_index('rasl_probe',inplace=True,drop=False)
+# collapsed_read_df = b.join(bl_results,how='inner')
+# collapsed_read_df = collapsed_read_df[(collapsed_read_df.length >30) & (collapsed_read_df.qstart < 6) & (collapsed_read_df.observed_wellbc.map(len) < 10) & (collapsed_read_df.observed_wellbc.map(len) > 6)]     
+
+
+# <headingcell level=2>
+
+# 
+# 
+# Well and Plate Barcodes
+
+# <codecell>
+
+#plate_barcode = index read
+#WellBarcode = first ~8nt in read
+path = '/gpfs/home/erscott/Datasets_raw/RASLseq/Bcell_exp_2013_10/'
+barcodes = pd.read_table(path+'SampleID_Barcodes.txt',sep="\t")
+wellbarcode = barcodes.WellBarcode
+
+# <codecell>
 
 def fuzzy_wellbc_match(obs_wellbc, well_barcodes, start_pos, end_pos):
     '''
@@ -403,8 +433,36 @@ def fuzzy_wellbc_match(obs_wellbc, well_barcodes, start_pos, end_pos):
         if len(matches) >0: return (len(matches), ";".join([i[1] for i in matches]) )
         return (8, "mismatch")
 
+# <codecell>
+
+#Fuzzy matching observed wellbc with expected wellbc    
+wellbc_mappings = dict((obs_bc, fuzzy_wellbc_match(obs_bc, wellbarcode, 0, 9)) for obs_bc in collapsed_read_df['observed_wellbc'].unique())
+
+#converting wellbc mappings into a dataframe
+wellbc_mappings_df = pd.DataFrame.from_dict(wellbc_mappings,orient='index')  #index is observed_wellbc
+wellbc_mappings_df = wellbc_mappings_df[[0,1]]
+wellbc_mappings_df.columns = ['bc_edit_dist','mapped_bc']  #index is wellbarcode
 
 
+# <codecell>
+
+#MERGING COLLAPSED_READ_DF WITH FUZZY WELLBC MAPPINGS
+collapsed_read_df.index = collapsed_read_df.observed_wellbc  #setting index to observed_wellbc
+collapsed_read_df1 = collapsed_read_df.join(wellbc_mappings_df)  #Merging wellbarcode mappings with blast aligned fastq reads
+##df_plate_seq_blast_reliable.head()
+print 'done'
+
+# <codecell>
+
+#collapsed_read_df1[['observed_wellbc','mapped_bc','bc_edit_dist','seq_count','seq']].to_csv('/gpfs/home/erscott/Datasets_raw/RASLseq/Bcell_exp_2013_10/analysis/P1_well_barcode_mappings.txt',sep="\t", index=False)        
+
+
+
+# <headingcell level=3>
+
+# Well Annotations
+
+# <codecell>
 
 def well_annot_df(well_annot_path, delim):
     '''
@@ -429,12 +487,16 @@ def well_annot_df(well_annot_path, delim):
     bc_condition_key.set_index(['plate_barcode','WellBarcode'],inplace=True)
     return bc_condition_key
 
+# <codecell>
+
+well_annot_df = well_annot_df('/gpfs/home/erscott/Datasets_raw/RASLseq/Bcell_exp_2013_10/Bcell_exp_2013_10_bc_key.txt', '\t')     
 
 
+# <headingcell level=3>
 
 # Summing Probe-specific Read Counts
 
-
+# <codecell>
 
 def get_probe_well_read_counts(collapsed_read_counts):
     '''
@@ -464,7 +526,22 @@ def get_probe_well_read_counts(collapsed_read_counts):
     
     return counts_df
 
+# <codecell>
 
+#Filtering using bc_edit_dist
+collapsed_read_df1 = collapsed_read_df1[(collapsed_read_df1.bc_edit_dist.astype(float)<2)]
+
+
+#Final Well Read Count dataframe
+collapsed_read_df_counts = get_probe_well_read_counts(collapsed_read_df1)
+
+
+
+# <headingcell level=3>
+
+# Merging Probe-specific Read Counts and Well Annotations
+
+# <codecell>
 
 def merge_plate_well_annot(probe_counts_df, well_annot_df):
     '''
@@ -488,11 +565,16 @@ def merge_plate_well_annot(probe_counts_df, well_annot_df):
     return well_annot_df.join(probe_counts_df,how='right')
     
 
+# <codecell>
 
+#MERGING WELL ANNOTATIONS AND PROBE READ COUNTS
+counts_df = merge_plate_well_annot(collapsed_read_df_counts, well_annot_df)
+
+# <headingcell level=2>
 
 # ENTIRE PROCESS
 
-
+# <codecell>
 
 class RASLseqAnalysis(object):
     def __init__(self, fastq_path, blastdb_path, blastn_path, write_path, print_on=False):
@@ -550,21 +632,31 @@ class RASLseqAnalysis(object):
         
         return get_rasl_probe_and_wellbc_exact(self.get_collapsed_reads_df(), print_on=self.print_on)
     
+    
+    
+        
 
+# <codecell>
+
+bl_write_path = "/gpfs/home/erscott/Datasets_raw/RASLseq/Bcell_exp_2013_10/blastdb/"
+blastn_path = '/gpfs/home/erscott/Tools/blast/ncbi-blast-2.2.26+/bin/blastn'
+db_path = "/gpfs/home/erscott/Datasets_raw/RASLseq/Bcell_exp_2013_10/blastdb/on_off_targetseq"
+fq_path = '/gpfs/home/erscott/Datasets_raw/RASLseq/Bcell_exp_2013_10/fastq/P1_CGGTTCT_L001_R1_001_100k.fastq.gz'
+
+test = RASLseqAnalysis(fq_path, db_path, blastn_path, bl_write_path)
+
+# <codecell>
+
+c = test.get_collapsed_reads_df()
+
+# <codecell>
 
 if __name__ == '__main__':
     ##RUN FROM FASTQ TO COUNTS_DF##
     
     
-    
-    #SETTING CWD and Sample FILE PATHS
-    cwd = os.getcwd()
-    sample_dir = os.path.split(cwd)[0] + '/'
-    
-    
     #CREATE FASTQ COLLAPSED DATAFRAME
-    test_fastq_path = 'sample.fastq.gz'
-    collapsed_read_df = get_collapsed_read_df(sample_dir + test_fasq_path, print_on=True)     
+    collapsed_read_df = get_collapsed_read_df('/gpfs/home/erscott/Datasets_raw/RASLseq/Bcell_exp_2013_10/fastq/P1_CGGTTCT_L001_R1_001_100k.fastq.gz',print_on=True)     
     
     
     #ID RASL_PROBE AND OBSERVED WELL BARCODE (BC) SEQUENCES USING ADAPTOR SEQUENCES AND ADD TO COLLAPSED_READ_DF
@@ -572,9 +664,9 @@ if __name__ == '__main__':
     
     
     #SET BLAST PARAMETERS
-    bl_write_path = "/path/to/blastdb/"
-    blastn_path = '/path/to/ncbi-blast-2.2.26+/bin/blastn'
-    db_path = "/path/to/blastdb_write_dir/on_off_targetseq"
+    bl_write_path = "/gpfs/home/erscott/Datasets_raw/RASLseq/Bcell_exp_2013_10/blastdb/"
+    blastn_path = '/gpfs/home/erscott/Tools/blast/ncbi-blast-2.2.26+/bin/blastn'
+    db_path = "/gpfs/home/erscott/Datasets_raw/RASLseq/Bcell_exp_2013_10/blastdb/on_off_targetseq"
     
     #BLAST RASL_PROBE SEQ AGAINST ALL COMBINATIONS OF ACCEPTOR AND DONOR PROBES
     bl_results = get_blast_alignments(collapsed_read_df, blastn_path, db_path, bl_write_path)
@@ -589,14 +681,12 @@ if __name__ == '__main__':
     
     
     #SETTING wellbarcode SEQUENCES
-    path = '/path/to/barcode_file_dir/'
-    barcodes = pd.read_table(path+'sample.bc',sep="\t")
+    path = '/gpfs/home/erscott/Datasets_raw/RASLseq/Bcell_exp_2013_10/'
+    barcodes = pd.read_table(path+'SampleID_Barcodes.txt',sep="\t")
     wellbarcode = barcodes.WellBarcode
-    
     
     #FUZZY MATCHING OBSERVED WELL BC WITH EXPECTED WELL BC    
     wellbc_mappings = dict((obs_bc, fuzzy_wellbc_match(obs_bc, wellbarcode, 0, 9)) for obs_bc in collapsed_read_df['observed_wellbc'].unique())
-    
     
     #CONVERTING WELL BC MAPPINGS INTO A DF
     wellbc_mappings_df = pd.DataFrame.from_dict(wellbc_mappings,orient='index')  #index is observed_wellbc
@@ -612,7 +702,7 @@ if __name__ == '__main__':
     
     
     #WELL ANNOTATION DATAFRAME
-    well_annot_df = get_well_annot_df('/path/to/sample.bc', '\t')     
+    well_annot_df = get_well_annot_df('/gpfs/home/erscott/Datasets_raw/RASLseq/Bcell_exp_2013_10/Bcell_exp_2013_10_bc_key.txt', '\t')     
     
     #SUM PROBE-SPECIFIC READ COUNTS
     collapsed_read_df_counts = get_probe_well_read_counts(collapsed_read_df)

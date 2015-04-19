@@ -1,7 +1,7 @@
 
 
 
-import editdist
+import Levenshtein as editdist
 import pandas as pd
 
 
@@ -200,7 +200,52 @@ def get_rasl_probe_and_wellbc_fuzzy_df(collapsed_read_df, wellbarcodes, AD1='GGA
 
 
 
+def map_bc(obs_bcs, expected_bcs):
+    '''
+    This function takes a read and searches for supplied barcode sequences.
+    
+    Parameters
+    ----------
+    obs_bs: str, fastq sequence before the first instance of AD1
+        e.g. ATGCATG
+    
+    expected_bcs: list, expected well barcodes
+        e.g. ATGCATG
+    
+    
+    Returns
+    -------
+    The expected barcode found in the obs_bcs OR 'mismatch' (if no barcode is found) 
+    
+    
+    '''
+    
+    #initializing obs_wellbc variable and set of expected well barcodes
+    FASTQ, bc_set = obs_bcs.upper(), set(expected_bcs) 
+    
+    #limit search for exact matches to [: end_pos]
+    matches = set(FASTQ[n:n+8] for n in range(0, 2) if FASTQ[n:n+8] in bc_set)
+    
+    
+    #RETURNS EXPECTED BARCODE SEQUENCE IF UNIQUE MATCH FOUND
+    if len(matches) == 1: return list(matches)[0]  #return the single best match
 
+    #BRUTE FORCE SEARCH OF obs_wellbc subsequence
+    else: 
+        matches = set()
+        for bars in expected_bcs:  #Differentiate between more than 1 exact match, or find fuzzy matches
+            BARS = bars.upper()  #added a bit of ADAPTOR1 to make the mappings more stringent
+            edist = editdist.distance(FASTQ, BARS)
+            delta_8 = abs(len(FASTQ) - 8)  #correcting for difference in string seq lengths
+            if edist < 2:
+                return BARS
+            else:
+                if edist + delta_8 < 2:  #looser thresholds performed poorly and only added maybe a couple hundred reads out of a million
+                    matches.add(bars)
+        if len(matches) >0: return ";".join([i[1] for i in matches])
+        return "mismatch"
+
+    
 
 
 

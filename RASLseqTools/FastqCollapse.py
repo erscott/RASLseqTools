@@ -74,6 +74,8 @@ def get_collapsed_fastq_df(fastq_path, sequencer_id, print_on=False):
             seq_count - number of occurrences of seq in fastq
     '''
     
+    
+    
     #GET FILE OBJECT
     fastq_obj = get_file_obj(fastq_path)
     
@@ -105,8 +107,30 @@ def get_collapsed_fastq_df(fastq_path, sequencer_id, print_on=False):
 
 
 
+def get_fastq_unstack(fastq_df):
+    '''
+    This function converts a fastq file into pandas dataframe with
+    separate columns for PlateBarcode, WellBarcode, Read Seq, and Quality
+    '''
+    
+    id_line = fastq_df.ix[range(0,len(fastq_df),4)][0]
+    reads = fastq_df.ix[range(1,len(fastq_df),4)][0]  #44bp
+    plus = fastq_df.ix[range(2,len(fastq_df),4)][0]
+    qual = fastq_df.ix[range(3,len(fastq_df),4)][0]
+    df = pd.DataFrame(zip(id_line, reads, plus, qual))
+    df.columns = ['id_line', 'seq', 'plus', 'quality']
+    return df
 
 
+
+
+def write_fastq(fastq_df, output_path):
+    '''
+    This function writes a valid fastq_df to disk
+    '''
+    fastq_df[['id_line', 'seq', 'plus', 'quality']].to_csv(output_path, sep='\n',\
+                                                             header=False, index=False)
+    return True
 
 
 

@@ -1,16 +1,17 @@
-
 import pandas as pd
 import os,sys
 import numpy as np
 import argparse
-#from src import *
+
+import inspect
+source_dir =  os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))) 
+source_dir = '/'.join(source_dir.split('/')[:-1])
+sys.path.append(source_dir)
+from RASLseqTools import *
 
 
 
-
-
-
-class RASLseqAnalysis_obj_heur(object):
+class RASLseqAnalysis_BLAST(object):
     '''
     This class creates a pandas DataFrame for RASLseq fastq sequences.
     
@@ -59,12 +60,13 @@ class RASLseqAnalysis_obj_heur(object):
     
     '''
 
-    def __init__(self, fastq_path, sequencer_id, probes_path, blastdb_path, blastn_dir, well_annot, write_path, print_on=False ):
+    def __init__(self, fastq_path, sequencer_id, probes_path, blastdb_path, blastn_dir, well_annot, write_path, print_on=False,\
+                 offset_5p=24, offset_3p=22, wellbc_start=0, wellbc_end=8):
         #create a probe with name name
         
         self.RASLseqReads_obj = RASLseqReads.RASLseqReads(fastq_path, sequencer_id, print_on)
         
-        self.RASLseqProbes_obj = RASLseqProbes.RASLseqProbes(probes_path, blastdb_path, blastn_dir)   
+        self.RASLseqProbes_obj = RASLseqProbes.RASLseqProbes(probes_path, blastdb_path, blastn_dir, aligner='blast')   
         
         self.RASLseqBCannot_obj = RASLseqBCannot.RASLseqBCannot(well_annot)
         
@@ -76,9 +78,15 @@ class RASLseqAnalysis_obj_heur(object):
         
         self.write_path = write_path
         
-        #self.write_obj = open(write_path,'w')
+        self.offset_5p = int(offset_5p)
         
-        self.read_df = self.RASLseqReads_obj.read_df
+        self.offset_3p = int(offset_3p)
+        
+        self.wellbc_start = int(wellbc_start)
+        
+        self.wellbc_end = int(wellbc_end)
+        
+        self.read_df = self.RASLseqReads_obj.get_blast_read_df()
         
         self.fastq_read_count = self.read_df.seq_count.sum()  #number of total reads found in fastq input    
         
@@ -153,12 +161,11 @@ class RASLseqAnalysis_obj_heur(object):
         produce a pandas DataFrame describing the RASLseq probe-specific
         read counts prepended with well specific annotations.
         
-
         '''
         
         #Add observed wellbc
         #self.read_df = RASLseqWellbc.get_rasl_probe_and_wellbc_exact_df(self.read_df, print_on=self.print_on)
-        self.read_df['observed_wellbc'] = self.read_df['seq'].str[:8]
+        self.read_df['observed_wellbc'] = self.read_df['seq'].str[self.wellbc_start:self.wellbc_end]
          
         #add fuzzy matched wellbc (mapped_bc)
         self.read_df = RASLseqWellbc.get_rasl_probe_and_wellbc_fuzzy_df(self.read_df, self.RASLseqBCannot_obj.well_bc, \
@@ -169,11 +176,11 @@ class RASLseqAnalysis_obj_heur(object):
         
         #add observed rasl_probe_seq
         #self.read_df = RASLseqSeq.get_rasl_probe_exact_df(self.read_df)
-        self.read_df['rasl_probe'] = self.read_df['seq'].str[23:65]
+        self.read_df['rasl_probe'] = self.read_df['seq'].str[self.offset_5p : -self.offset_3p]
         
         #blast alignment
-        self.read_df = RASLseqAlign.get_rasl_blast_df(self.read_df, self.RASLseqProbes_obj.blastn_dir, \
-                            self.RASLseqProbes_obj.blastdb_file, print_on=self.print_on)
+        self.read_df = RASLseqAlign.get_rasl_aligned_df(self.read_df, self.RASLseqProbes_obj.aligner_dir, \
+                            self.RASLseqProbes_obj.probedb_file, print_on=self.print_on, aligner='blast')
         
         #filtering blast results
         self.read_df = self.read_df[(self.read_df.length > self.blast_results_filter['length']) & \
@@ -204,18 +211,34 @@ class RASLseqAnalysis_obj_heur(object):
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-f','--fastq', type=str,help='Specifies the input fastq file, /path/to/CG_data/RASLseq.fq')
+
 parser.add_argument('-s','--sequencer_id', type=str,help='Specifies the sequencer identifier in the fastq index lines, e.g. @HISEQ')
+
 parser.add_argument('-p','--probes', type=str,help='Specifies the input probes file containing the following columns: AcceptorProbeSequence DonorProbeSequence AcceptorAdaptorSequence DonorAdaptorSequence ProbeName, /path/to/probes.txt') 
+
 parser.add_argument('-w','--well_annot', type=str,help='Specifies the input well annotations file containing the following columns: PlateBarcode and WellBarcode, /path/to/well/annotations.txt')
+
 parser.add_argument('-d','--blastdb_path', type=str,help='Specifies the directory for writing blast database, /path/to/write/blastdb/')
+
 parser.add_argument('-b','--blastn_bin', type=str,help='Specifies the path to directory holding blastn executable, /path/to/blastn_dir/')
+
 parser.add_argument('-P','--print_on', action='store_true', default=False,help='Specifies whether to print summary stats during alignment')
+
 parser.add_argument('-o','--output_path', type=str,help='Specifies the output file path, e.g. /path/to/output/counts_df.txt')
+
+parser.add_argument('-o5','--offset_5p', type=int, default=24, help='Specifies the number of bases to clip from 5-prime end of read to isolate probe sequence, default 24')
+
+parser.add_argument('-o3','--offset_3p', type=int, default=22, help='Specifies the number of bases to clip from 3-prime end of read to isolate probe sequence, default 22')
+
+parser.add_argument('-ws','--wellbc_start', type=int, default=0, help='Specifies the index position of the wellbc start base, default 0')
+
+parser.add_argument('-we','--wellbc_end', type=int, default=8, help='Specifies the index position of the wellbc start base, default 8')
 
 
 opts = parser.parse_known_args()
 fastq_path, sequencer_id, probes_path, blastdb_path, blastn_dir = opts[0].fastq, opts[0].sequencer_id, opts[0].probes, opts[0].blastdb_path, opts[0].blastn_bin 
 well_annot, write_path, print_on_bool = opts[0].well_annot, opts[0].output_path, opts[0].print_on
+offset_5p, offset_3p, wellbc_start, wellbc_end = opts[0].offset_5p, opts[0].offset_3p, opts[0].wellbc_start, opts[0].wellbc_end
             
         
 
@@ -224,7 +247,8 @@ well_annot, write_path, print_on_bool = opts[0].well_annot, opts[0].output_path,
 
 if __name__ == '__main__':
     
-    rasl_analysis = RASLseqAnalysis_obj_heur(fastq_path, sequencer_id, probes_path, blastdb_path, blastn_dir, well_annot, write_path, print_on=print_on_bool)
+    rasl_analysis = RASLseqAnalysis_BLAST(fastq_path, sequencer_id, probes_path, blastdb_path, blastn_dir, well_annot, write_path, print_on=print_on_bool, \
+                                          offset_5p=offset_5p, offset_3p=offset_3p, wellbc_start=wellbc_start, wellbc_end=wellbc_end)
     
     rasl_analysis.get_target_counts_df()
     

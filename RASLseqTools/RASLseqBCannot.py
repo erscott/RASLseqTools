@@ -28,9 +28,9 @@ class RASLseqBCannot(object):
         
         try:
         
-            self.well_bc = self.well_annot_df.WellBarcode
+            self.well_bc = set(self.well_annot_df.WellBarcode)
         
-            self.plate_bc = self.well_annot_df.PlateBarcode
+            self.plate_bc = set(self.well_annot_df.PlateBarcode)
         
             self.well_annot_df.set_index(['PlateBarcode','WellBarcode'],inplace=True)
 
