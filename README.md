@@ -130,13 +130,17 @@ X.bc: tab-separated file describing each well in the experiment with the followi
 
 <h4>Dependencies</h4>
 <ul>
+STAR aligner
+</ul>
+
+<ul>
 BLASTn
 </ul>
 <ul>
 pandas
 </ul>
 <ul>
-py-editdist
+Levenshtein editdist
 </ul>
 <ul>
 NumPy
