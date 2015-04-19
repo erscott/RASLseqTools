@@ -28,6 +28,7 @@ def rasl_probe_seq_extraction(df, AD1='GGAAGCCTTGGCTTTTG', AD2='AGATCGGAAGAGCACA
       or
     '0' if AD1 or AD2 is not in seq sequence
     '''
+    
     initial_df_len = len(df)
     
     df['AD1_in'] = df.seq.str.count(AD1)
