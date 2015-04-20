@@ -127,8 +127,8 @@ def get_star_alignments(collapsed_read_df, aligner_path, db_path, print_on=False
     star_write_path = db_path + 'temp_star_' + random_file_handle +"_"
     cmd = [aligner_path + '/STAR', '--genomeDir', db_path, '--readFilesIn', collapsed_read_df, '--runThreadN', str(n_jobs), \
            '--seedSearchStartLmax 1', '--seedPerReadNmax', str(15000), '--scoreDelOpen -1', '--scoreDelBase -2', '--scoreInsOpen -1', \
-           '--scoreInsBase -2', '--outFilterMultimapNmax 100', '--outFilterMatchNminOverLread 0.6', '--scoreGapNoncan -1', \
-           '--outFilterScoreMinOverLread 0.6', '--clip5pNbases', str(offset_5p), '--clip3pNbases', str(offset_3p), \
+           '--scoreInsBase -2', '--outFilterMultimapNmax 100', '--outFilterMatchNminOverLread 0.7', '--scoreGapNoncan -1', \
+           '--outFilterScoreMinOverLread 0.7', '--clip5pNbases', str(offset_5p), '--clip3pNbases', str(offset_3p), \
            '--outStd SAM']
     
     #reading STAR ALGINMENTS FROM STDOUT into pandas df
