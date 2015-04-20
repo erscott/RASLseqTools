@@ -51,7 +51,7 @@ python /path/to/RASLseqAnalysis_STAR.py [required args -f -a -p -w -d -o] [optio
   <BR>
 
   example command: <BR>
-  python /path/to/RASLseqAnalysis_STAR.py -f /path/to/your.fastq.gz -a /path/to/STAR_binary/ -p /paht/to/RASL.probes -w /path/to/annotations.bc -d /path/to/write_directory/ -o /path/to/blastdb/write_dir/  -P -A -n 1 -o5 25 -03 20 -ws 0 -we 8 <BR>
+  python /path/to/RASLseqAnalysis_STAR.py -f /path/to/your.fastq.gz -a /path/to/STAR_binary/ -p /paht/to/RASL.probes -w /path/to/annotations.bc -d /path/to/write_directory/ -o /path/to/blastdb/write_file.txt  -P -A -n 1 -o5 25 -03 20 -ws 0 -we 8 <BR>
   <BR>
   example data: can be found in the data directory <BR>
   
