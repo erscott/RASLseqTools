@@ -1,6 +1,5 @@
 RASLseqTools
 ==============
-
 RASLseq FASTQ reads to RASLprobe counts.
 
 
@@ -8,8 +7,60 @@ RASL-seq is a powerful and inexpensive method to assess gene expression without 
 
 <BR>
 <BR>
-<h4>Usage</h4>
-python /path/to/RASLseqAnalysis.py [required args -f -s -p -w -d -b -o] [optional args -P]
+
+<h4>19 April 2015</h4>
+Initial public release RASLseqTools, Default Aligner is now STAR (https://github.com/alexdobin/STAR)
+
+
+
+<BR>
+<h4>STAR Usage</h4>
+python /path/to/RASLseqAnalysis_STAR.py [required args -f -a -p -w -d -o] [optional args -P -A -n -o5 -o3 -ws -we]
+
+<BLOCKQUOTE>
+
+  -f : str, absolute path to fastq file(s) (accepts gzip files, comma-separated list if multiple fastqs) <BR>
+  
+  -a : str, absolute path to STAR bin directory <BR>
+  
+  -p : str, absolute path to probes file <BR>
+
+  -w : str, absolute path to annotations file <BR>
+
+  -d : str, absolute path to output directory <BR>
+
+  -o : str, absolute path of output file <BR>
+
+  <BR>
+  
+  -P : bool, verbose printing <BR>
+  
+  -A : bool, Write STAR alignments to disk, will be written in output directory <BR>
+  
+  -n : int, number of jobs, currently requires 2 processors <BR>
+  
+  -o5: int, number of bases to clip from 5-prime end of read to isolate probe sequence, default=24 <BR>
+  
+  -o3: int, number of bases to clip from 3-prime end of read to isolate probe sequence, default=22 <BR>
+  
+  -ws: int, index position of the wellbarcode start base in read, default=0 <BR>
+  
+  -we: int, index position of the wellbarcode end base in read, default=8 <BR>
+  
+  
+  <BR>
+
+  example command: <BR>
+  python /path/to/RASLseqAnalysis_STAR.py -f /path/to/your.fastq.gz -a /path/to/STAR_binary/ -p /paht/to/RASL.probes -w /path/to/annotations.bc -d /path/to/write_directory/ -o /path/to/blastdb/write_dir/  -P -A -n 1 -o5 25 -03 20 -ws 0 -we 8 <BR>
+  <BR>
+  example data: can be found in the data directory <BR>
+  
+
+
+
+<BR>
+<h4>BLASTn Usage</h4>
+python /path/to/RASLseqAnalysis_BLAST.py [required args -f -s -p -w -d -b -o] [optional args -P]
 
 <BLOCKQUOTE>
 
@@ -35,7 +86,7 @@ python /path/to/RASLseqAnalysis.py [required args -f -s -p -w -d -b -o] [optiona
   <BR>
 
   example command: <BR>
-  python /path/to/RASLseqAnalysis.py -f /path/to/your.fastq.gz -s @HISEQ -p /paht/to/RASL.probes -w /path/to/annotations.bc -d  /path/to/blastdb/write_dir/ -b /path/to/blast/ncbi-blast-2.2.26+/bin/ -P -o /path/to/output.txt <BR>
+  python /path/to/RASLseqAnalysis_BLAST.py -f /path/to/your.fastq.gz -s @HISEQ -p /paht/to/RASL.probes -w /path/to/annotations.bc -d  /path/to/blastdb/write_dir/ -b /path/to/blast/ncbi-blast-2.2.26+/bin/ -P -o /path/to/output.txt <BR>
   
   example data: can be found in the data directory <BR>
   
@@ -67,8 +118,8 @@ X.probes: tab-separated file describing the RASLseq Probes with the following co
 X.bc: tab-separated file describing each well in the experiment with the following columns and column headers<BR>
 <BLOCKQUOTE>
   REQUIRED: <BR>
-  plate_bc <BR>
-  well_bc <BR>
+  PlateBarcode <BR>
+  WellBarcode <BR>
   OPTIONAL: additional columns with well metadata, column headers are user defined, e.g. drug_concentration
   <BR>
   Please see example file in data/ directory <BR>
