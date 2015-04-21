@@ -242,7 +242,8 @@ def pairwise_barcode_distances(barcodes):
         
     '''
     barcode_count = len(barcodes)
-    bc_levenshtein_dist = np.array( map(edist_mp, itertools.product(barcodes, barcodes)) ).reshape(barcode_count,barcode_count)
+    bc_levenshtein_dist = np.array( map(edist_mp, itertools.combinations(barcodes, 2)) )
+    bc_levenshtein_dist = distance.squareform(bc_levenshtein_dist).reshape(barcode_count,barcode_count)
     bc_levenshtein_dist = pd.DataFrame(bc_levenshtein_dist, columns=barcodes, index=barcodes)
 
     return bc_levenshtein_dist
