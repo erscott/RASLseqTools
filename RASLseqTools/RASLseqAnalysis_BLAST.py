@@ -259,5 +259,5 @@ if __name__ == '__main__':
 
 """
 TEST
-python /path/to/RASLseqAnalysis.py -f /path/to/your.fastq.gz -p /paht/to/RASL.probes -w /path/to/annotations.bc -d /path/to/blastdb/write_dir/ -b /path/to/blast/ncbi-blast-2.2.26+/bin/ -P -o /path/to/output.txt
+python /path/to/RASLseqAnalysis.py -s '@HISEQ' -f /path/to/your.fastq.gz -p /paht/to/RASL.probes -w /path/to/annotations.bc -d /path/to/blastdb/write_dir/ -b /path/to/blast/ncbi-blast-2.2.26+/bin/ -P -o /path/to/output.txt
 """

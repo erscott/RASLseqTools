@@ -278,7 +278,8 @@ class RASLseqAnalysis_STAR(object):
             if self.write_alignments:
                 print 'Writing STAR Alignments To Disk'
                 self.alignment_write_file = self.write_file + '.Aligned.out'
-                self.aligned_df.to_csv(self.alignment_write_file, sep='\t', mode='a', header=False)
+                self.alignment_write_file_header = self.aligned_df.columns
+                self.aligned_df.to_csv(self.alignment_write_file, sep='\t', mode='a', header=False, index=False)
                 print 'Writing STAR Alignments To Disk Complete'  
                 print   
                     
@@ -445,6 +446,8 @@ if __name__ == '__main__':
         rasl_analysis.get_target_counts_df()
         
         rasl_analysis.RASLseqAnalysis_df.to_csv(rasl_analysis.write_file, sep='\t')
+        
+        os.system('gzip ' + rasl_analysis.alignment_write_file)  #gzip STAR alignment file
         print 
         print 'Demultiplexing, Alignment, & Counting Complete:', fastq_path 
      
