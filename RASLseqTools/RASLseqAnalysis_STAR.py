@@ -6,6 +6,7 @@ import argparse
 import subprocess
 import multiprocessing as mp
 import sys,os
+import time
 
 import inspect
 source_dir =  os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))) 
@@ -234,7 +235,6 @@ class RASLseqAnalysis_STAR(object):
             self.read_df = FastqCollapse.get_fastq_unstack(read_df)
             
             
-            
             #WRITE TO TEMP FILE
             random_str = self.RASLseqProbes_obj.random_str
             self.temp_fastq = self.write_path + 'temp_' + random_str + '.fastq'
@@ -282,8 +282,10 @@ class RASLseqAnalysis_STAR(object):
                 self.aligned_df.to_csv(self.alignment_write_file, sep='\t', mode='a', header=False, index=False)
                 print 'Writing STAR Alignments To Disk Complete'  
                 print   
-                    
+            
             #MERGING BARCODES AND ALIGNED READS
+            
+            
             self.read_df = self.read_df.merge(self.aligned_df, on='id_line', how='inner')
             del self.aligned_df
                     
