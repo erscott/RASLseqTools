@@ -9,7 +9,9 @@ RASL-seq is a powerful and inexpensive method to assess gene expression without 
 <BR>
 
 <h4>19 April 2015</h4>
-Initial public release RASLseqTools, Default Aligner is now STAR (https://github.com/alexdobin/STAR)
+<BR>Initial public release RASLseqTools, Default Aligner is now STAR (https://github.com/alexdobin/STAR)<BR>
+<BR>
+Example IPython Notebook: http://nbviewer.ipython.org/github/erscott/RASLseqTools/blob/master/ipynb/RASLseqTools_STAR_example.ipynb
 
 
 
