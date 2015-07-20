@@ -80,7 +80,7 @@ class RASLseqProbes(object):
             on_off_target_df_data.append([probe_name_cartesian_product[i][0], probe_name_cartesian_product[i][1], off_target_seq, acc_adap, don_adap])
         
         on_off_target_df = pd.DataFrame.from_records(on_off_target_df_data)
-        on_off_target_df.columns = ['acceptor_probe_id', 'donor_probe_id', 'off_target_seq', 'AcceptorAdaptorSequence', 'DonorAdaptorSequence']
+        on_off_target_df.columns = ['acceptor_probe_id', 'donor_probe_id', 'probe_seq', 'AcceptorAdaptorSequence', 'DonorAdaptorSequence']
         on_off_target_df.index = on_off_target_df['acceptor_probe_id'] + "///" + on_off_target_df['donor_probe_id']
         return on_off_target_df
     
@@ -220,6 +220,8 @@ class RASLseqProbes(object):
         self.random_str = str(random.randrange(0,1000000))
         
         self.aligner_dir = aligner_dir
+        
+        self.probe_columns = list( self.on_off_target_probes_df.index )
         
         
         if aligner == 'blast':

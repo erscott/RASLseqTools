@@ -272,13 +272,15 @@ class RASLseqAnalysis_STAR(object):
             pool.close()
             pool.join()
             self.aligned_df = self.aligned_df.get()
+            pool.terminate()
             print 'Alignment Complete'
             #print time.gmtime(), 5
             
             if self.write_alignments:
                 print 'Writing STAR Alignments To Disk'
                 self.alignment_write_file = self.write_file + '.Aligned.out'
-                self.aligned_df.to_csv(self.alignment_write_file, sep='\t', mode='a', header=False)
+                self.alignment_write_file_header = self.aligned_df.columns
+                self.aligned_df.to_csv(self.alignment_write_file, sep='\t', mode='a', header=False, index=False)
                 print 'Writing STAR Alignments To Disk Complete'  
                 print   
             
@@ -327,7 +329,37 @@ class RASLseqAnalysis_STAR(object):
         return
 
 
-
+    def load_target_counts_df(self, file_path):
+        '''
+        This function loads a RASLseqAnalysis_df from the file_path
+        
+        
+        Parameters
+        ----------------
+        file_path: str
+            Specifies the path to the RASLseqAnalysis_df
+            
+            Expects tab-separated sample by count dataframe with 
+            PlateBarcode, WellBarcode columns
+            
+        Returns
+        ----------------
+        self.RASLseqAnalysis_df, pandas DataFrame
+            
+        '''
+        compression = ''
+        if 'gz' in file_path:
+            compression='gzip'
+        
+        df = pd.read_table(file_path, sep='\t', index_col=['PlateBarcode', 'WellBarcode'], compression=compression)
+        self.RASLseqAnalysis_df = df
+        
+        self.probe_columns = list( set(self.RASLseqProbes_obj.probe_columns) & set(self.RASLseqAnalysis_df.columns) )
+        
+        self.annot_columns = list( set(self.RASLseqBCannot_obj.annot_columns) & set(self.RASLseqAnalysis_df.columns) )
+        
+        return
+        
 
 def count_df(df, annot_cols):
     '''
@@ -447,6 +479,8 @@ if __name__ == '__main__':
         rasl_analysis.get_target_counts_df()
         
         rasl_analysis.RASLseqAnalysis_df.to_csv(rasl_analysis.write_file, sep='\t')
+        
+        os.system('gzip ' + rasl_analysis.write_file)  #gzip STAR alignment file
         print 
         print 'Demultiplexing, Alignment, & Counting Complete:', fastq_path 
      

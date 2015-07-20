@@ -33,6 +33,8 @@ class RASLseqBCannot(object):
             self.plate_bc = set(self.well_annot_df.PlateBarcode)
         
             self.well_annot_df.set_index(['PlateBarcode','WellBarcode'],inplace=True)
+            
+            self.annot_columns = self.well_annot_df.columns
 
         except AttributeError:
             print "!!!!"
