@@ -272,6 +272,7 @@ class RASLseqAnalysis_STAR(object):
             pool.close()
             pool.join()
             self.aligned_df = self.aligned_df.get()
+            pool.terminate()
             print 'Alignment Complete'
             #print time.gmtime(), 5
             
@@ -479,7 +480,7 @@ if __name__ == '__main__':
         
         rasl_analysis.RASLseqAnalysis_df.to_csv(rasl_analysis.write_file, sep='\t')
         
-        os.system('gzip ' + rasl_analysis.alignment_write_file)  #gzip STAR alignment file
+        os.system('gzip ' + rasl_analysis.write_file)  #gzip STAR alignment file
         print 
         print 'Demultiplexing, Alignment, & Counting Complete:', fastq_path 
      
