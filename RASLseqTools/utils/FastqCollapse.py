@@ -1,13 +1,12 @@
-
-import pandas as pd
 from collections import Counter
+import pandas as pd
 import gzip
 
 
 def get_file_obj(file_path):
     '''
-    This function returns a file object
-    given a gzip or uncompressed file path
+        This function returns a file object
+        given a gzip or uncompressed file path
     '''
     if file_path.endswith('.gz'):
         return gzip.open(file_path, 'r')
@@ -16,21 +15,21 @@ def get_file_obj(file_path):
 
 
 def fastq_collapsing_Counter(fastq_file_obj, sequencer_id):
-    """
-    Implementation of a Counter (Collections library) object filled with FASTQ reads sequences
-    (plus 3' barcode) by iterating through a fastq file and collapsing identical reads
+    '''
+        Implementation of a Counter (Collections library) object filled with FASTQ reads sequences
+        (plus 3' barcode) by iterating through a fastq file and collapsing identical reads
 
-    Parameters
-    ----------
-    fastq_file_obj: unread python file object
+        Parameters
+        ----------
+        fastq_file_obj: unread python file object
 
 
-    Returns
-    -------
-    Counter object (python Collections)
-        key: (FASTQ read sequence, bc_3')  (bc_3' is found in the header sequence)
-        value: int, count of FASTQ read sequence
-    """
+        Returns
+        -------
+        Counter object (python Collections)
+            key: (FASTQ read sequence, bc_3')  (bc_3' is found in the header sequence)
+            value: int, count of FASTQ read sequence
+    '''
 
     seq_library_counter = Counter()
     header_bc_2 = ""
@@ -48,28 +47,28 @@ def fastq_collapsing_Counter(fastq_file_obj, sequencer_id):
 
 def get_collapsed_fastq_df(fastq_path, sequencer_id, print_on=False):
     '''
-    This function collapses identical fastq read sequences and extracts
-    the 3' barcode read to return a pandas dataframe:
-        index: (plate_barcode, sequence)
-        columns: ['plate_barcode', 'seq', 'seq_count']
+        This function collapses identical fastq read sequences and extracts
+        the 3' barcode read to return a pandas dataframe:
+            index: (plate_barcode, sequence)
+            columns: ['plate_barcode', 'seq', 'seq_count']
 
-    Parameters
-    ----------
-    fastq_path: str
-        Specifies the full path to the fastq file, handles gzip and non-gzip fastq files
+        Parameters
+        ----------
+        fastq_path: str
+            Specifies the full path to the fastq file, handles gzip and non-gzip fastq files
 
-    print_on: boolean, default=False
-        If print_on == True prints "number of unique bc/reads to map total"
+        print_on: boolean, default=False
+            If print_on == True prints "number of unique bc/reads to map total"
 
-    Returns
-    -------
-    Pandas dataframe
-        multi-index: (plate_barcode, sequence)
-        columns: ['plate_barcode', 'seq', 'seq_count']
+        Returns
+        -------
+        Pandas dataframe
+            multi-index: (plate_barcode, sequence)
+            columns: ['plate_barcode', 'seq', 'seq_count']
 
-            plate_barcode - Index read from fastq file
-            seq - fastq read sequence
-            seq_count - number of occurrences of seq in fastq
+                plate_barcode - Index read from fastq file
+                seq - fastq read sequence
+                seq_count - number of occurrences of seq in fastq
     '''
 
     # GET FILE OBJECT
@@ -99,8 +98,8 @@ def get_collapsed_fastq_df(fastq_path, sequencer_id, print_on=False):
 
 def get_fastq_unstack(fastq_df):
     '''
-    This function converts a fastq file into pandas dataframe with
-    separate columns for PlateBarcode, WellBarcode, Read Seq, and Quality
+        This function converts a fastq file into pandas dataframe with
+        separate columns for PlateBarcode, WellBarcode, Read Seq, and Quality
     '''
 
     id_line = fastq_df.ix[range(0, len(fastq_df), 4)][0]
@@ -114,7 +113,7 @@ def get_fastq_unstack(fastq_df):
 
 def write_fastq(fastq_df, output_path):
     '''
-    This function writes a valid fastq_df to disk
+        This function writes a valid fastq_df to disk
     '''
 
     fastq_df[['id_line', 'seq', 'plus', 'quality']].to_csv(

@@ -1,6 +1,6 @@
+import pandas as pd
 import itertools
 import random
-import pandas as pd
 import os
 
 
@@ -172,11 +172,11 @@ class RASLseqProbes(object):
         self.probes = pd.read_table(probe_file, sep='\t')
 
         if len(set(['AcceptorProbeSequence', 'DonorProbeSequence', 'AcceptorAdaptorSequence', 'DonorAdaptorSequence', 'ProbeName']) & set(self.probes.columns)) != 5:
-                print "!!!!"
-                print "!!!!"
+                print '!!!!'
+                print '!!!!'
                 print '!!!!  Probes file Missing Column(s) or Column Header(s) AcceptorProbeSequence, DonorProbeSequence, AcceptorAdaptorSequence, DonorAdaptorSequence, ProbeName  !!!!!"'
-                print "!!!!"
-                print "!!!!"
+                print '!!!!'
+                print '!!!!'
                 assert False
 
         self.probes['acceptor_no_adaptor'] = self.probes.apply(self.remove_adaptor, args=['AcceptorProbeSequence', 'AcceptorAdaptorSequence'], axis=1)

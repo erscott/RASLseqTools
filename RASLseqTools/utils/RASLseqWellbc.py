@@ -3,7 +3,7 @@ import pandas as pd
 
 
 def observed_wellbc_extraction(line, AD1='GGAAGCCTTGGCTTTTG'):
-        '''
+    '''
         This function returns the sequence (observed wellbc) before the first adaptor sequence
         ToDo, fix alignments to well bc
 
@@ -20,36 +20,35 @@ def observed_wellbc_extraction(line, AD1='GGAAGCCTTGGCTTTTG'):
         Fastq sequence before first occurent of AD1
           or
         '0' if AD1 not in seq sequence
-        '''
+    '''
 
-        seq = line['seq']
-        if AD1 in seq:
-            return seq[: seq.index(AD1)]
+    seq = line['seq']
+    if AD1 in seq:
+        return seq[: seq.index(AD1)]
 
-        else:
-            return '0'
+    else:
+        return '0'
 
 
 def fuzzy_wellbc_match(obs_wellbc, well_barcodes, start_pos, end_pos):
     '''
-    This function takes a read and searches for supplied barcode sequences.
+        This function takes a read and searches for supplied barcode sequences.
 
-    Parameters
-    ----------
-    obs_wellbc: str, fastq sequence before the first instance of AD1
-        e.g. ATGCATG
+        Parameters
+        ----------
+        obs_wellbc: str, fastq sequence before the first instance of AD1
+            e.g. ATGCATG
 
-    well_barcodes: list, expected well barcodes
-        e.g. ATGCATG
+        well_barcodes: list, expected well barcodes
+            e.g. ATGCATG
 
-    start_pos: int, limits the string search space of the obs_wellbc
+        start_pos: int, limits the string search space of the obs_wellbc
 
-    end_position: int, limits the string search space of the obs_wellbc
+        end_position: int, limits the string search space of the obs_wellbc
 
-    Returns
-    -------
-    The expected barcode found in the obs_wellbc OR 'mismatch' (if no barcode is found)
-
+        Returns
+        -------
+        The expected barcode found in the obs_wellbc OR 'mismatch' (if no barcode is found)
 
     '''
 
@@ -85,31 +84,31 @@ def fuzzy_wellbc_match(obs_wellbc, well_barcodes, start_pos, end_pos):
 
 def get_rasl_probe_and_wellbc_exact_df(collapsed_read_df, AD1='GGAAGCCTTGGCTTTTG', AD2='AGATCGGAAGAGCACAC', perfect_adaptor_matches=True, print_on=False):
     '''
-    This function identifies the observed well barcode
-    sequence within the fastq read using an exact
-    match to the adaptor sequences (AD1 & RCAD2)
+        This function identifies the observed well barcode
+        sequence within the fastq read using an exact
+        match to the adaptor sequences (AD1 & RCAD2)
 
-    Parameters
-    ----------
-    collapsed_read_df: pandas dataframe
-        Requires 'seq' column (fastq read sequence)
+        Parameters
+        ----------
+        collapsed_read_df: pandas dataframe
+            Requires 'seq' column (fastq read sequence)
 
-    AD1: str, optional, default='GGAAGCCTTGGCTTTTG'
-        Specifies the first adaptor sequence expected in the fastq read
+        AD1: str, optional, default='GGAAGCCTTGGCTTTTG'
+            Specifies the first adaptor sequence expected in the fastq read
 
-    AD2: str, optional, default='AGATCGGAAGAGCACAC'
-        Specifies the second adaptor sequence expected in the fastq read
+        AD2: str, optional, default='AGATCGGAAGAGCACAC'
+            Specifies the second adaptor sequence expected in the fastq read
 
-    perfect_matches: boolean, optional, default=False
-        If True, returns a pandas dataframe containing fastq reads with
-        an exact match to AD1 and AD2
+        perfect_matches: boolean, optional, default=False
+            If True, returns a pandas dataframe containing fastq reads with
+            an exact match to AD1 and AD2
 
 
-    Returns
-    -------
-    Pandas Dataframe
-        multi-index: (plate_barcode, sequence)
-        columns: ['plate_barcode', 'seq', 'seq_count', 'rasl_probe', 'observed_wellbc']
+        Returns
+        -------
+        Pandas Dataframe
+            multi-index: (plate_barcode, sequence)
+            columns: ['plate_barcode', 'seq', 'seq_count', 'rasl_probe', 'observed_wellbc']
 
     '''
 
@@ -128,32 +127,31 @@ def get_rasl_probe_and_wellbc_exact_df(collapsed_read_df, AD1='GGAAGCCTTGGCTTTTG
 
 def get_rasl_probe_and_wellbc_fuzzy_df(collapsed_read_df, wellbarcodes, AD1='GGAAGCCTTGGCTTTTG', AD2='AGATCGGAAGAGCACAC', print_on=False):
     '''
-    This function identifies the observed well barcode
-    sequence within the fastq read using an exact
-    match to the adaptor sequences (AD1 & RCAD2)
+        This function identifies the observed well barcode
+        sequence within the fastq read using an exact
+        match to the adaptor sequences (AD1 & RCAD2)
 
-    Parameters
-    ----------
-    collapsed_read_df: pandas dataframe
-        Requires 'seq' column (fastq read sequence)
+        Parameters
+        ----------
+        collapsed_read_df: pandas dataframe
+            Requires 'seq' column (fastq read sequence)
 
-    AD1: str, optional, default='GGAAGCCTTGGCTTTTG'
-        Specifies the first adaptor sequence expected in the fastq read
+        AD1: str, optional, default='GGAAGCCTTGGCTTTTG'
+            Specifies the first adaptor sequence expected in the fastq read
 
-    AD2: str, optional, default='AGATCGGAAGAGCACAC'
-        Specifies the second adaptor sequence expected in the fastq read
+        AD2: str, optional, default='AGATCGGAAGAGCACAC'
+            Specifies the second adaptor sequence expected in the fastq read
 
-    perfect_matches: boolean, optional, default=False
-        If True, returns a pandas dataframe containing fastq reads with
-        an exact match to AD1 and AD2
+        perfect_matches: boolean, optional, default=False
+            If True, returns a pandas dataframe containing fastq reads with
+            an exact match to AD1 and AD2
 
 
-    Returns
-    -------
-    Pandas Dataframe
-        multi-index: (plate_barcode, sequence)
-        columns: ['plate_barcode', 'seq', 'seq_count', 'rasl_probe', 'observed_wellbc']
-
+        Returns
+        -------
+        Pandas Dataframe
+            multi-index: (plate_barcode, sequence)
+            columns: ['plate_barcode', 'seq', 'seq_count', 'rasl_probe', 'observed_wellbc']
     '''
 
     # Fuzzy matching observed wellbc with expected wellbc
@@ -176,21 +174,20 @@ def get_rasl_probe_and_wellbc_fuzzy_df(collapsed_read_df, wellbarcodes, AD1='GGA
 
 def map_bc(obs_bcs, expected_bcs):
     '''
-    This function takes a read and searches for supplied barcode sequences.
+        This function takes a read and searches for supplied barcode sequences.
 
-    Parameters
-    ----------
-    obs_bs: str, fastq sequence before the first instance of AD1
-        e.g. ATGCATG
+        Parameters
+        ----------
+        obs_bs: str, fastq sequence before the first instance of AD1
+            e.g. ATGCATG
 
-    expected_bcs: list, expected well barcodes
-        e.g. ATGCATG
+        expected_bcs: list, expected well barcodes
+            e.g. ATGCATG
 
 
-    Returns
-    -------
-    The expected barcode found in the obs_bcs OR 'mismatch' (if no barcode is found)
-
+        Returns
+        -------
+        The expected barcode found in the obs_bcs OR 'mismatch' (if no barcode is found)
 
     '''
 

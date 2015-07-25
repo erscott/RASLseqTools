@@ -6,27 +6,27 @@ import os
 
 # BLAST ALIGNMENT
 def rasl_probe_blast(read_file_path, aligner_path, db_path, print_on=False):
-    """
-    This function returns blast results from queries optimized for rasl-seq conditions and outputs
-    a custom format
+    '''
+        This function returns blast results from queries optimized for rasl-seq conditions and outputs
+        a custom format
 
-    Parameters
-    ----------
-    read_file_path: str, path to temp blast input file
-        Specifies where temporary blast input file has been written
+        Parameters
+        ----------
+        read_file_path: str, path to temp blast input file
+            Specifies where temporary blast input file has been written
 
-    aligner_path: str, path to blastn or STAR executable
-        Specifies full path to blastn or STAR executable
+        aligner_path: str, path to blastn or STAR executable
+            Specifies full path to blastn or STAR executable
 
-    db_path: str, path to target BLAST or STAR database
-        Specifies path to on_off_target BLAST or STAR database
+        db_path: str, path to target BLAST or STAR database
+            Specifies path to on_off_target BLAST or STAR database
 
-    Returns
-    -------
-    Pandas Blast Results dataframe
-        index = qseqid, rasl_probe sequence
-        cols = ['qseqid','mismatch','evalue','sseqid','qlen', 'length','qseq','qstart','sseq','sstart','send']
-    """
+        Returns
+        -------
+        Pandas Blast Results dataframe
+            index = qseqid, rasl_probe sequence
+            cols = ['qseqid','mismatch','evalue','sseqid','qlen', 'length','qseq','qstart','sseq','sstart','send']
+    '''
 
     # SETTING WRITE PATH FOR BLAST OUTPUT
     write_path = read_file_path.rstrip(".txt") + "_blast_output.txt"
@@ -65,26 +65,25 @@ def rasl_probe_blast(read_file_path, aligner_path, db_path, print_on=False):
 
 def get_blast_alignments(collapsed_read_df, aligner_path, db_path, print_on=False):
     '''
-    This function returns the rasl_probe sequence blast alignments
+        This function returns the rasl_probe sequence blast alignments
 
-    Parameters
-    ----------
-    collapsed_read_df: pandas dataframe, must contain columns ['rasl_probe']
-        collapsed_read_df['rasl_probe'] - fastq sequence observed between rasl adaptor sequences
+        Parameters
+        ----------
+        collapsed_read_df: pandas dataframe, must contain columns ['rasl_probe']
+            collapsed_read_df['rasl_probe'] - fastq sequence observed between rasl adaptor sequences
 
-    aligner_path: str, path to blastn or STAR executable
-        Specifies full path to STAR executable
+        aligner_path: str, path to blastn or STAR executable
+            Specifies full path to STAR executable
 
-    db_path: str, path to target BLAST database
-        Specifies path to on_off_target BLAST database
+        db_path: str, path to target BLAST database
+            Specifies path to on_off_target BLAST database
 
 
-    Returns
-    -------
-    Pandas Blast Results dataframe
-        index = qseqid  #which is the ~40 nt rasl_probe sequence
-        cols = ['qseqid','mismatch','evalue','sseqid','qlen', 'length','qseq','qstart','sseq','sstart','send']
-
+        Returns
+        -------
+        Pandas Blast Results dataframe
+            index = qseqid  #which is the ~40 nt rasl_probe sequence
+            cols = ['qseqid','mismatch','evalue','sseqid','qlen', 'length','qseq','qstart','sseq','sstart','send']
     '''
 
     # CREATING BLAST INPUT FILE
@@ -176,7 +175,7 @@ def get_star_alignments(read_fq_path, aligner_path, db_path, print_on=False, n_j
 # PASS AN OBJECT (RASLseqReads) WITH ALL OF THESE ATTRIBUTES OR PASS THE INDIVIDUAL OBJECTS?
 def get_rasl_aligned_df(collapsed_read_df, aligner_path, db_path, print_on=False, aligner='star', n_jobs=1, offset_5p=16, offset_3p=16):
     '''
-    This function coordinates aligment of collapsed_read_df
+        This function coordinates aligment of collapsed_read_df
     '''
     # PASS OBJECT
     if aligner == 'blast':
@@ -202,17 +201,16 @@ def mp_get_rasl_aligned_df(args):
 
 def pairwise_barcode_distances(barcodes):
     '''
-    This function returns a dataframe of pair-wise distances between barcodes
+        This function returns a dataframe of pair-wise distances between barcodes
 
-    Parameters
-    --------------
-    barcodes: list or set of barcode sequences
+        Parameters
+        --------------
+        barcodes: list or set of barcode sequences
 
-    Returns
-    --------------
-    barcode distance matrix, pandas dataframe
-        squareform
-
+        Returns
+        --------------
+        barcode distance matrix, pandas dataframe
+            squareform
     '''
     barcode_count = len(barcodes)
     bc_levenshtein_dist = np.array(map(edist_mp, itertools.combinations(barcodes, 2)))
