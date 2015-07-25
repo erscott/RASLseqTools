@@ -208,7 +208,6 @@ class RASLseqProbes(object):
         if aligner == 'star':
 
             os.system('mkdir ' + probedb_path.rstrip('/') + '/' + self.random_str + '/')
-
             self.probedb_path = probedb_path.rstrip('/') + '/' + self.random_str + '/'
             self.make_fasta()
             self.make_stardb()

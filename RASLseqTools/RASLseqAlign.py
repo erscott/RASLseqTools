@@ -107,46 +107,46 @@ def get_blast_alignments(collapsed_read_df, aligner_path, db_path, print_on=Fals
 # STAR ALIGNMENT
 def get_star_alignments(read_fq_path, aligner_path, db_path, print_on=False, n_jobs=1, offset_5p=16, offset_3p=16):
     '''
-    This function aligns fastq file using the STAR aligner
+        This function aligns fastq file using the STAR aligner
 
-    Parameters
-    ----------
-    read_fq_path: str, path to fastq file
-
-
-    aligner_path: str, path to blastn or STAR executable
-        Specifies full path to STAR executable
-
-    db_path: str, path to target STAR database
-        Specifies path to on_off_target STAR database
-
-    print_on: bool, default=False
-        Print STAR Command
-
-    n_jobs: int, default=1
-        Number of threads to use for alignment
-
-    offset_5p: int, default=16
-        Index position for RASLprobe start,
-        Number of bases to clip from 5' end of read
-        to isolate probe sequence
-
-    offset_3p: int, defaults=16
-        Number of bases from 3' end of read to clip
-        in order to isolate probe sequence in read
+        Parameters
+        ----------
+        read_fq_path: str, path to fastq file
 
 
-    Returns
-    -------
-    star_results, pandas dataframe
-        columns: SAM columns [0,1,2,4,5,9,10]
-        Drops multi-mapping reads
+        aligner_path: str, path to blastn or STAR executable
+            Specifies full path to STAR executable
+
+        db_path: str, path to target STAR database
+            Specifies path to on_off_target STAR database
+
+        print_on: bool, default=False
+            Print STAR Command
+
+        n_jobs: int, default=1
+            Number of threads to use for alignment
+
+        offset_5p: int, default=16
+            Index position for RASLprobe start,
+            Number of bases to clip from 5' end of read
+            to isolate probe sequence
+
+        offset_3p: int, defaults=16
+            Number of bases from 3' end of read to clip
+            in order to isolate probe sequence in read
 
 
-    EXAMPLE COMMAND
-        #/path/to/STAR_2.3.0e.OSX_x86_64/STAR   --genomeDir ../../STAR_RRASL/ --readFilesIn lane1_Undetermined_L001_R1_001_truth_set_reads.fastq --runThreadN 4
-        #--seedSearchStartLmax 1 --seedPerReadNmax 15000 --scoreDelOpen -1 --scoreDelBase -2 --scoreInsOpen -1 --scoreInsBase -2 --outFilterMultimapNmax 100
-        #--outFilterMatchNminOverLread 0.6 --scoreGapNoncan -1 --outFilterScoreMinOverLread 0.6 --clip5pNbases 16 --clip3pNbases 16
+        Returns
+        -------
+        star_results, pandas dataframe
+            columns: SAM columns [0,1,2,4,5,9,10]
+            Drops multi-mapping reads
+
+
+        EXAMPLE COMMAND
+            #/path/to/STAR_2.3.0e.OSX_x86_64/STAR   --genomeDir ../../STAR_RRASL/ --readFilesIn lane1_Undetermined_L001_R1_001_truth_set_reads.fastq --runThreadN 4
+            #--seedSearchStartLmax 1 --seedPerReadNmax 15000 --scoreDelOpen -1 --scoreDelBase -2 --scoreInsOpen -1 --scoreInsBase -2 --outFilterMultimapNmax 100
+            #--outFilterMatchNminOverLread 0.6 --scoreGapNoncan -1 --outFilterScoreMinOverLread 0.6 --clip5pNbases 16 --clip3pNbases 16
     '''
     if 'gz' in read_fq_path:
         os.system('gunzip ' + read_fq_path)
@@ -208,7 +208,6 @@ def pairwise_barcode_distances(barcodes):
     --------------
     barcodes: list or set of barcode sequences
 
-
     Returns
     --------------
     barcode distance matrix, pandas dataframe
@@ -225,7 +224,7 @@ def pairwise_barcode_distances(barcodes):
 
 def cigar_to_align(sw_cigar):
     '''
-    Parse swalign CIGAR
+        Parse swalign CIGAR
     '''
 
     cigar_trans = {'M': '|', 'D': 'D', 'I': 'I'}
@@ -235,8 +234,8 @@ def cigar_to_align(sw_cigar):
 
 def swalign_df(ref, query):
     '''
-    This function returns swalign info:
-    ref, query, r_pos, r_end, q_pos, q_end, score, matches, mismatches, identity, cigar
+        This function returns swalign info:
+        ref, query, r_pos, r_end, q_pos, q_end, score, matches, mismatches, identity, cigar
     '''
     match = 2
     mismatch = -1
@@ -255,28 +254,28 @@ def swalign_df(ref, query):
 
 def mp_swalign(align_probes):
     '''
-    This function uses smith waterman alignment
-    to map a ref sequence against a set of probes
+        This function uses smith waterman alignment
+        to map a ref sequence against a set of probes
 
-    Parameters
-    ------------
-    align_probes: tuple(ref, query_probes), required
-        ref is the reference string to align against
-        query_probes is a set of probes to align against the reference
+        Parameters
+        ------------
+        align_probes: tuple(ref, query_probes), required
+            ref is the reference string to align against
+            query_probes is a set of probes to align against the reference
 
-    Returns
-    -------------
-    max alignment score
+        Returns
+        -------------
+        max alignment score
 
-    max alignment frequency
+        max alignment frequency
 
-    alignment objects
+        alignment objects
 
 
-    Usage:
-    #results = map(mp_swalign, alignment_tasks)
-    #ontarget_align_df = [n for i in results for n in i[-1]]  #flatten results
-    #ontarget_align_df = pd.DataFrame(ontarget_align_df)  #aggregated dataframe
+        Usage:
+        #results = map(mp_swalign, alignment_tasks)
+        #ontarget_align_df = [n for i in results for n in i[-1]]  #flatten results
+        #ontarget_align_df = pd.DataFrame(ontarget_align_df)  #aggregated dataframe
     '''
     ref, q_probes = align_probes[0], align_probes[1]  # str and list
 
@@ -302,13 +301,4 @@ def mp_swalign(align_probes):
             else:
                 continue
     return min_dist, min_dist_count, best_alignments
-
-
-
-
-
-
-
-
-
 
