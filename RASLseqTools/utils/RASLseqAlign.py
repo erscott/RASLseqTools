@@ -5,7 +5,7 @@ import os
 
 
 # BLAST ALIGNMENT
-def rasl_probe_blast(read_file_path, aligner_path, db_path, print_on=False):
+def rasl_probe_blast(read_file_path, aligner_path, db_path):
     '''
         This function returns blast results from queries optimized for rasl-seq conditions and outputs
         a custom format
@@ -45,7 +45,7 @@ def rasl_probe_blast(read_file_path, aligner_path, db_path, print_on=False):
     )
     os.system(cmd_str)
 
-    if print_on:
+    if VERBOSE:
         print "BLAST COMMAND\n" + cmd_str
 
     # CONVERTING BLAST OUTPUT INTO DATAFRAME
@@ -63,7 +63,7 @@ def rasl_probe_blast(read_file_path, aligner_path, db_path, print_on=False):
     return bl_results
 
 
-def get_blast_alignments(collapsed_read_df, aligner_path, db_path, print_on=False):
+def get_blast_alignments(collapsed_read_df, aligner_path, db_path):
     '''
         This function returns the rasl_probe sequence blast alignments
 
@@ -98,13 +98,13 @@ def get_blast_alignments(collapsed_read_df, aligner_path, db_path, print_on=Fals
     blast_input.close()
 
     # ARGUMENTS FOR BLAST FUNCTION
-    bl_results = rasl_probe_blast(blast_write_path, aligner_path, db_path, print_on=False)
+    bl_results = rasl_probe_blast(blast_write_path, aligner_path, db_path)
 
     return bl_results
 
 
 # STAR ALIGNMENT
-def get_star_alignments(read_fq_path, aligner_path, db_path, print_on=False, n_jobs=1, offset_5p=16, offset_3p=16):
+def get_star_alignments(read_fq_path, aligner_path, db_path, n_jobs=1, offset_5p=16, offset_3p=16):
     '''
         This function aligns fastq file using the STAR aligner
 
@@ -118,9 +118,6 @@ def get_star_alignments(read_fq_path, aligner_path, db_path, print_on=False, n_j
 
         db_path: str, path to target STAR database
             Specifies path to on_off_target STAR database
-
-        print_on: bool, default=False
-            Print STAR Command
 
         n_jobs: int, default=1
             Number of threads to use for alignment
@@ -165,7 +162,7 @@ def get_star_alignments(read_fq_path, aligner_path, db_path, print_on=False, n_j
     star_results.rename(columns={2: 'ProbeName', 0: 'id_line'}, inplace=True)
     star_results = star_results[star_results[1] != 256]  # Removing multimapper
 
-    if print_on:
+    if VERBOSE:
         print 'STAR COMMAND'
         print ' '.join(cmd)
 
@@ -173,14 +170,14 @@ def get_star_alignments(read_fq_path, aligner_path, db_path, print_on=False, n_j
 
 
 # PASS AN OBJECT (RASLseqReads) WITH ALL OF THESE ATTRIBUTES OR PASS THE INDIVIDUAL OBJECTS?
-def get_rasl_aligned_df(collapsed_read_df, aligner_path, db_path, print_on=False, aligner='star', n_jobs=1, offset_5p=16, offset_3p=16):
+def get_rasl_aligned_df(collapsed_read_df, aligner_path, db_path, aligner='star', n_jobs=1, offset_5p=16, offset_3p=16):
     '''
         This function coordinates aligment of collapsed_read_df
     '''
     # PASS OBJECT
     if aligner == 'blast':
         # BLAST RASL_PROBE SEQ AGAINST ALL COMBINATIONS OF ACCEPTOR AND DONOR PROBES
-        bl_results = get_blast_alignments(collapsed_read_df, aligner_path, db_path, print_on=False)
+        bl_results = get_blast_alignments(collapsed_read_df, aligner_path, db_path)
 
         # JOINING BLAST RESULTS WITH COLLAPSED_READ_DF
         collapsed_read_df.set_index('rasl_probe', inplace=True, drop=False)
@@ -190,13 +187,13 @@ def get_rasl_aligned_df(collapsed_read_df, aligner_path, db_path, print_on=False
     if aligner == 'star':
         return get_star_alignments(
             collapsed_read_df, aligner_path, db_path,
-            print_on=False, n_jobs=n_jobs, offset_5p=offset_5p,
+            n_jobs=n_jobs, offset_5p=offset_5p,
             offset_3p=offset_3p)
 
 
 def mp_get_rasl_aligned_df(args):
-    collapsed_read_df, aligner_path, db_path, print_on, aligner, n_jobs, offset_5p, offset_3p = args
-    return get_star_alignments(collapsed_read_df, aligner_path, db_path, print_on=False, n_jobs=n_jobs, offset_5p=offset_5p, offset_3p=offset_3p)
+    collapsed_read_df, aligner_path, db_path, aligner, n_jobs, offset_5p, offset_3p = args
+    return get_star_alignments(collapsed_read_df, aligner_path, db_path, n_jobs=n_jobs, offset_5p=offset_5p, offset_3p=offset_3p)
 
 
 def pairwise_barcode_distances(barcodes):

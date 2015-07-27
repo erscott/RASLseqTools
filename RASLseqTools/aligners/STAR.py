@@ -1,4 +1,4 @@
-from RASLseqTools import *
+from ..RASLseqAnalysis import RASLseqAnalysis
 
 import multiprocessing as mp
 import pandas as pd
@@ -9,14 +9,12 @@ import raven
 import sys
 import os
 
-source_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-source_dir = '/'.join(source_dir.split('/')[:-1])
-sys.path.append(source_dir)
 
-client = raven.Client(dsn='http://4939f4e75211487ab3821e1af9d9f3d2:c8569ad1ff844e6f8b7284fca7c0bffe@sentry.sulab.org/7', release='1.0.0')
+class STAR(RASLseqAnalysis):
+    name = 'star'
+    version = 0.1
 
 
-class RASLseqAnalysis_STAR(object):
     '''
         This class creates a pandas DataFrame for RASLseq fastq sequences.
 
@@ -42,9 +40,6 @@ class RASLseqAnalysis_STAR(object):
 
         write_path: str
         path to write directory
-
-        print_on: boolean, default=False
-        Whether to print information during data processing
 
         offset_5p: int, optional, default=24
         Index position for RASLprobe start,
@@ -77,38 +72,9 @@ class RASLseqAnalysis_STAR(object):
             write_file, print_on=False, n_jobs=1,
             offset_5p=24, offset_3p=22, wellbc_start=0,
             wellbc_end=8, write_alignments=False):
+        pass
 
-        self.RASLseqProbes_obj = RASLseqProbes.RASLseqProbes(probes_path, write_path, aligner_dir, aligner='star')
 
-        self.RASLseqBCannot_obj = RASLseqBCannot.RASLseqBCannot(well_annot)
-
-        self.RASLseqBCannot_obj.well_bc = self.RASLseqBCannot_obj.well_bc
-
-        self.aligner = 'star'
-
-        self.aligner_path = aligner_dir
-
-        self.fastq_path = fastq_path
-
-        self.n_jobs = n_jobs
-
-        self.offset_5p = int(offset_5p)
-
-        self.offset_3p = int(offset_3p)
-
-        self.wellbc_start = int(wellbc_start)
-
-        self.wellbc_end = int(wellbc_end)
-
-        self.print_on = print_on
-
-        self.write_alignments = write_alignments
-
-        self.write_path = write_path
-
-        self.write_file = write_file
-
-        self.bc_edit_dist_filter = 2
 
     def _get_probe_well_read_counts(self, collapsed_read_counts):
         '''
@@ -140,26 +106,6 @@ class RASLseqAnalysis_STAR(object):
         counts_df.index.names = ['PlateBarcode', 'WellBarcode']
         return counts_df
 
-    def _merge_plate_well_annot(self, probe_counts_df, well_annot_df):
-        '''
-            This function merges gene_counts_df with well annotations
-
-            Parameters
-            ----------
-            probe_counts_df: Pandas DataFrame
-            Requires pandas index: ('PlateBarcode','WellBarcode')
-
-            well_annot_path: Pandas DataFrame
-            Requires pandas index: ('PlateBarcode','WellBarcode')
-
-            Returns
-            -------
-            Pandas DataFrame
-            well_annot_df right joined to gene_counts_df
-            index: ('plate_barcode','WellBarcode')
-
-        '''
-        return well_annot_df.join(probe_counts_df, how='right')
 
     def get_demultiplexed_id(self):
         '''
@@ -207,11 +153,7 @@ class RASLseqAnalysis_STAR(object):
             Processes 250000 reads per chunk
         '''
 
-        if '.gz' in self.fastq_path:
-            self.fastq_df_chunk = pd.read_table(self.fastq_path, sep='\t', chunksize=1000000, header=None, compression='gzip')
-
-        else:
-            self.fastq_df_chunk = pd.read_table(self.fastq_path, sep='\t', chunksize=1000000, header=None)
+        self.fastq_df_chunk = pd.read_table(self.fastq_path, sep='\t', chunksize=1000000, header=None, compression='gzip' if '.gz' in self.fastq_path else None)
 
         self.master_df = []
         for n, read_df in enumerate(self.fastq_df_chunk):
@@ -347,107 +289,3 @@ def count_df(df, annot_cols):
     return aggregated_counts
 
 
-parser = argparse.ArgumentParser()
-
-parser.add_argument('-f', '--fastq', type=str, help='Specifies the input fastq file can be series delimitted list of fq, e.g. /path/to/CG_data/RASLseq.fq')
-
-parser.add_argument('-p', '--probes', type=str, help='Specifies the input probes file containing the following columns: AcceptorProbeSequence DonorProbeSequence AcceptorAdaptorSequence DonorAdaptorSequence ProbeName, e.g. /path/to/probes.txt')
-
-parser.add_argument('-a', '--aligner_bin', type=str, help='Specifies the path to directory holding STAR executable, /path/to/aligner_dir/')
-
-parser.add_argument('-w', '--well_annot', type=str, help='Specifies the input well annotations file containing the following columns: PlateBarcode and WellBarcode, e.g. /path/to/well/annotations.txt')
-
-parser.add_argument('-d', '--output_dir', type=str, help='Specifies the output directory path, e.g. /path/to/output/')
-
-parser.add_argument('-o', '--output_file', type=str, help='Specifies the output file path, e.g. /path/to/output/STAR_reads.txt')
-
-parser.add_argument('-P', '--print_on', action='store_true', default=False, help='Specifies whether to print summary stats during alignment, default=False')
-
-parser.add_argument('-A', '--write_alignments', action='store_true', default=False, help='Specifies whether to write STAR alignments to disk, default=False')
-
-parser.add_argument('-n', '--n_jobs', type=int, default=1, help='Specifies the number of processors to use, default 1')
-
-parser.add_argument('-o5', '--offset_5p', type=int, default=24, help='Specifies the number of bases to clip from 5-prime end of read to isolate probe sequence, default 24')
-
-parser.add_argument('-o3', '--offset_3p', type=int, default=22, help='Specifies the number of bases to clip from 3-prime end of read to isolate probe sequence, default 22')
-
-parser.add_argument('-ws', '--wellbc_start', type=int, default=0, help='Specifies the index position of the wellbc start base, default 0')
-
-parser.add_argument('-we', '--wellbc_end', type=int, default=8, help='Specifies the index position of the wellbc start base, default 8')
-
-opts = parser.parse_known_args()
-
-fastq_path, probes_path, aligner_dir, well_annot, write_path = opts[0].fastq, opts[0].probes, opts[0].aligner_bin, opts[0].well_annot, opts[0].output_dir
-
-n_jobs, offset_5p, offset_3p, wellbc_start, wellbc_end, write_file = opts[0].n_jobs, opts[0].offset_5p, opts[0].offset_3p, opts[0].wellbc_start, opts[0].wellbc_end, opts[0].output_file
-
-print_on, write_alignments = opts[0].print_on, opts[0].write_alignments
-
-
-if __name__ == '__main__':
-
-    # Handles multiple fastq files in serial
-    if ',' in fastq_path:
-        fq_files = fastq_path.split(',')
-        rasl_analysis = RASLseqAnalysis_STAR(
-            fq_files[0], probes_path, aligner_dir,
-            well_annot, write_path, write_file,
-            print_on=False, n_jobs=n_jobs, offset_5p=offset_5p,
-            offset_3p=offset_3p, wellbc_start=wellbc_start,
-            wellbc_end=wellbc_end, write_alignments=write_alignments)
-
-        rasl_analysis.get_target_counts_df()
-
-        annot_cols = list(rasl_analysis.RASLseqBCannot_obj.well_annot_df.columns)
-
-        master_df = count_df(rasl_analysis.RASLseqAnalysis_df.copy(), annot_cols)
-
-        # Iterating through FASTQ files
-        for fastq in fq_files[1:]:
-            rasl_analysis = RASLseqAnalysis_STAR(
-                fastq, probes_path, aligner_dir,
-                well_annot, write_path, write_file,
-                print_on=False, n_jobs=n_jobs, offset_5p=offset_5p,
-                offset_3p=offset_3p, wellbc_start=wellbc_start,
-                wellbc_end=wellbc_end, write_alignments=write_alignments)
-
-            rasl_analysis.get_target_counts_df()
-
-            master_df = master_df.add(
-                count_df(rasl_analysis.RASLseqAnalysis_df, annot_cols),
-                fill_value=0)
-
-            print
-            print 'Demultiplexing, Alignment, & Counting Complete:', fastq_path
-
-        master_df = rasl_analysis.RASLseqBCannot_obj.well_annot_df.join(master_df)
-        master_df.to_csv(write_path + 'Aggregated_counts_STAR_alignment.txt', sep='\t')
-
-        print 'All Files Complete:'
-        print fastq_path
-
-        # GZip STAR alignment file
-        os.system('gzip ' + rasl_analysis.alignment_write_file)
-
-    else:
-        # Handles single fastq file
-        rasl_analysis = RASLseqAnalysis_STAR(
-            fastq_path, probes_path, aligner_dir,
-            well_annot, write_path, write_file,
-            print_on=False, n_jobs=n_jobs, offset_5p=offset_5p,
-            offset_3p=offset_3p, wellbc_start=wellbc_start,
-            wellbc_end=wellbc_end, write_alignments=write_alignments)
-
-        rasl_analysis.get_target_counts_df()
-
-        rasl_analysis.RASLseqAnalysis_df.to_csv(rasl_analysis.write_file, sep='\t')
-
-        # GZip STAR alignment file
-        os.system('gzip ' + rasl_analysis.write_file)
-        print
-        print 'Demultiplexing, Alignment, & Counting Complete:', fastq_path
-
-        """
-            (TEST)
-            python RASLseqAnalysis_STAR.py -f ~/Dropbox/RASLseq/Bcell_exp2/ipynb/data/truth_sets/SeqRun1/lane1_Undetermined_L001_R1_001_truth_set_reads.fastq.gz -p ~/Dropbox/RASLseq/Bcell_exp2/ipynb/data/on_target_probes_Bcell_2014.probes -a ~/Dropbox/RASLseq/Bcell_exp2/STAR_bin/ -w ~/Dropbox/RASLseq/Bcell_exp2/ipynb/data/20131203_Rasl-Seq_bioactive_cmp-Table1.tsv -d ~/Dropbox/RASLseq/Bcell_exp2/ipynb/data/temp/ -o ~/Dropbox/RASLseq/Bcell_exp2/ipynb/data/temp/STAR_testing.txt -n 1 -o5 24 -o3 22 -ws 0 -we 8
-        """
