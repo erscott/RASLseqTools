@@ -5,8 +5,9 @@ import os
 import sys
 import Levenshtein as editdist
 import swalign
-
-
+import numpy as np
+import itertools
+from scipy.spatial import distance
 
 
 #BLAST ALIGNMENT
@@ -222,31 +223,37 @@ def mp_get_rasl_aligned_df(args):
         
 
 
-
-
-
-
-def pairwise_barcode_distances(barcodes):
+#LEVENSHTEIN EDIT DISTANCE
+def edist_mp(seq1_seq2):
     '''
-    This function returns a dataframe of pair-wise distances between barcodes
+    Pairwise Levenshtein Edit Distances
+    '''
+    return editdist.distance(seq1_seq2[0], seq1_seq2[1])
+
+
+#PAIRWISE LEVENSHTEIN EDIT DISTANCE DataFrame
+def pairwise_distances(sequences):
+    '''
+    This function returns a dataframe of pair-wise distances between sequences
     
     Parameters
     --------------
-    barcodes: list or set of barcode sequences
+    sequences: list or set of barcode sequences
     
     
     Returns
     --------------
-    barcode distance matrix, pandas dataframe
+    sequences distance matrix, pandas dataframe
         squareform
         
     '''
-    barcode_count = len(barcodes)
-    bc_levenshtein_dist = np.array( map(edist_mp, itertools.combinations(barcodes, 2)) )
-    bc_levenshtein_dist = distance.squareform(bc_levenshtein_dist).reshape(barcode_count,barcode_count)
-    bc_levenshtein_dist = pd.DataFrame(bc_levenshtein_dist, columns=barcodes, index=barcodes)
+    barcode_count = len(sequences)
+    sequences = sorted(list(sequences))
+    levenshtein_dist = np.array( map(edist_mp, itertools.combinations(sequences, 2)) )
+    levenshtein_dist = distance.squareform(levenshtein_dist).reshape(barcode_count,barcode_count)
+    levenshtein_dist = pd.DataFrame(levenshtein_dist, columns=sequences, index=sequences)
 
-    return bc_levenshtein_dist
+    return levenshtein_dist
 
 
 
