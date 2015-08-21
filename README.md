@@ -8,6 +8,13 @@ RASL-seq is a powerful and inexpensive method to assess gene expression without 
 <BR>
 <BR>
 
+<h4>20 August 2015</h4>
+<BR>Public Release RASLseqTools Version 0.2 <BR>
+<BR><ul>Added Normalization Module</ul>
+<BR><ul> Added Levenshtein Barcode Analysis functions to RASLseqBCannot </ul><BR>
+<BR>
+
+
 <h4>19 April 2015</h4>
 <BR>Initial public release RASLseqTools, Default Aligner is now STAR (https://github.com/alexdobin/STAR)<BR>
 <BR>
